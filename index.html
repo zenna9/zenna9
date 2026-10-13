@@ -1,11 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{description}}">
+  <meta name="theme-color" content="#f7f7f2">
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:description" content="{{description}}">
+  <title>{{title}}</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
 </head>
 <body>
-  hi
+  <a class="skip" href="#main">본문으로 이동</a>
+  <header class="header"><a class="brand" href="/" aria-label="정채은 홈"><span class="brand-mark">c.</span> CHAE EUN<span class="brand-sub"> / DEVELOPER</span></a><nav aria-label="주 메뉴"><a href="/#experience">이력서</a><a href="/#projects">포트폴리오</a><a class="header-contact" href="mailto:{{email}}">연락하기 <span>↗</span></a></nav></header>
+  {{body}}
+  <footer><span>© {{year}} {{name}}<span class="footer-note"> · 이해하고, 정리하고, 더 나은 방향으로.</span></span><a href="#top">맨 위로 ↑</a></footer>
 </body>
 </html>
