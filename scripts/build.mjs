@@ -15,18 +15,15 @@ function parse(text){
 const names = {'경력 요약':['overview','A LITTLE ABOUT MY WORK'],경력:['experience','EXPERIENCE'],'기술 스택':['skills','TOOLKIT'],'교육 및 기타사항':['education','LEARNING & BEYOND']};
 const sectionSplit = text => [...text.matchAll(/^## (.+)\r?\n([\s\S]*?)(?=^## |$(?![\s\S]))/gm)].map(x=>({title:x[1],body:x[2]}));
 const entries = text => [...text.matchAll(/^### (.+)\r?\n([\s\S]*?)(?=^### |$(?![\s\S]))/gm)].map(x=>({title:x[1],body:x[2]}));
-export async function build(){
-  const resume = parse(await fs.readFile(path.join(root,'content/resume.md'),'utf8'));
+async function buildPage(contentDir, outputDir, variant=''){
+  const resume = parse(await fs.readFile(path.join(contentDir,'resume.md'),'utf8'));
   const d=resume.data, sections=sectionSplit(resume.body);
-  const projectFiles=(await fs.readdir(path.join(root,'content/projects'))).filter(f=>f.endsWith('.md'));
-  const projects=await Promise.all(projectFiles.map(async f=>({...parse(await fs.readFile(path.join(root,'content/projects',f),'utf8')),slug:path.basename(f,'.md')})));
+  const projectFiles=(await fs.readdir(path.join(contentDir,'projects'))).filter(f=>f.endsWith('.md'));
+  const projects=await Promise.all(projectFiles.map(async f=>({...parse(await fs.readFile(path.join(contentDir,'projects',f),'utf8')),slug:path.basename(f,'.md')})));
   projects.sort((a,b)=>(Number(a.data.order)||99)-(Number(b.data.order)||99)||a.slug.localeCompare(b.slug));
   const template=await fs.readFile(path.join(root,'index.html'),'utf8');
   const render=(title,description,body)=>template.replace(/\{\{(\w+)\}\}/g,(_,key)=>({title:esc(title),description:esc(description),body,email:esc(d.email),name:esc(d.name),year:new Date().getFullYear()}[key]??''));
-  // Recreate generated output so deleting a Markdown file removes its old page too.
-  await fs.rm(path.join(root,'dist'),{recursive:true,force:true});
-  await fs.mkdir(path.join(root,'dist'),{recursive:true});
-  await fs.cp(path.join(root,'public'),path.join(root,'dist'),{recursive:true});
+  await fs.mkdir(outputDir,{recursive:true});
   const links=`<a href="${safe(d.github)}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="${safe(d.blog)}" target="_blank" rel="noopener noreferrer">Blog ↗</a><a href="${safe(d.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>`;
   const heading=(number,title,label)=>`<div class="section-heading"><div><span class="eyebrow">${esc(label)}</span><h2>${esc(title)}</h2></div><span class="section-number">${number}</span></div>`;
   let counter=0;
@@ -55,17 +52,34 @@ export async function build(){
   bodySections+=sections.filter(s=>s.title==='교육 및 기타사항').map(renderSection).join('');
   const intro=sections.find(s=>s.title==='소개');
   const hero=`<section class="hero" id="top"><div class="hero-topline"><span class="eyebrow">PORTFOLIO & RESUME</span><span class="hero-location"><span class="status-dot"></span> BASED IN SEOUL</span></div><h1>${esc(d.headline).replace(/&lt;br&gt;/g,'<br>')}</h1><div class="hero-bottom"><div><p class="hero-name">${esc(d.name)}<span>${esc(d.role)}</span></p><div class="hero-description">${intro?marked.parse(intro.body):''}</div><div class="hero-actions"><a class="button primary" href="#projects">프로젝트 살펴보기 <span>↗</span></a></div><div class="document-actions"><button class="button print-button" type="button">인쇄 / PDF 저장 ↓</button><a class="button download-button" href="/resume-portfolio.html" download="정채은-이력서-포트폴리오.html">파일 다운로드 (.html) ↓</a><p>PDF는 인쇄 창에서 ‘PDF로 저장’을 선택하세요.</p></div><div class="mobile-links">${links}</div></div></div></section>`;
-  const html=render(`${d.name} · Developer Portfolio`,'복잡한 흐름을 이해하는 개발자 정채은의 이력서와 포트폴리오',`<div class="page">${hero}<div class="content-layout"><aside class="sidebar"><p class="eyebrow">ON THIS PAGE</p><nav aria-label="섹션 이동">${nav.map(n=>`<a href="#${n.id}"><span>${n.num}</span>${esc(n.title)}</a>`).join('')}</nav><div class="sidebar-bottom"><span class="small-label">ELSEWHERE</span>${links}<button class="print-button" type="button">이력서 인쇄 ↗</button></div></aside><main id="main">${bodySections}<section class="contact" id="contact"><span class="eyebrow">LET’S CONNECT</span><h2>더 나은 경험을 만드는 일,<br>함께 이야기해요.</h2><a href="mailto:${esc(d.email)}">${esc(d.email)} <span>↗</span></a></section></main></div></div>`);
-  await fs.writeFile(path.join(root,'dist/index.html'),html);
+  let html=render(`${d.name} · Developer Portfolio`,'복잡한 흐름을 이해하는 개발자 정채은의 이력서와 포트폴리오',`<div class="page">${hero}<div class="content-layout"><aside class="sidebar"><p class="eyebrow">ON THIS PAGE</p><nav aria-label="섹션 이동">${nav.map(n=>`<a href="#${n.id}"><span>${n.num}</span>${esc(n.title)}</a>`).join('')}</nav><div class="sidebar-bottom"><span class="small-label">ELSEWHERE</span>${links}<button class="print-button" type="button">이력서 인쇄 ↗</button></div></aside><main id="main">${bodySections}<section class="contact" id="contact"><span class="eyebrow">LET’S CONNECT</span><h2>더 나은 경험을 만드는 일,<br>함께 이야기해요.</h2><a href="mailto:${esc(d.email)}">${esc(d.email)} <span>↗</span></a></section></main></div></div>`);
+  if(variant){
+    html=html.replaceAll('href="/#','href="/hae/#').replace('href="/"','href="/hae/"')
+      .replace('href="/resume-portfolio.html"','href="/hae/resume-portfolio.html"')
+      .replace('download="정채은-이력서-포트폴리오.html"','download="정채은-현대오토에버-이력서.html"')
+      .replaceAll('정채은 · Developer Portfolio','정채은 · 현대오토에버 지원 이력서')
+      .replaceAll('복잡한 흐름을 이해하는 개발자 정채은의 이력서와 포트폴리오','데이터 시각화, 웹 성능 개선, FE TDD 도입 경험을 담은 정채은의 이력서')
+      .replace('PORTFOLIO & RESUME','HYUNDAI AUTOEVER · FRONTEND')
+      .replace('</head>','<style>@media print{@page{size:A4;margin:24.5mm 15mm}}</style></head>');
+  }
+  await fs.writeFile(path.join(outputDir,'index.html'),html);
   const css=await fs.readFile(path.join(root,'public/style.css'),'utf8');
   const js=await fs.readFile(path.join(root,'public/app.js'),'utf8');
   const standalone=html.replace('<link rel="stylesheet" href="/style.css">',()=>`<style>${css}</style>`)
     .replace('<script src="/app.js" defer></script>','')
     .replace('</body>',()=>`<script>${js}</script></body>`)
     .replace('<link rel="icon" href="/favicon.svg" type="image/svg+xml">','')
+    .replaceAll('href="/hae/#','href="#').replace('href="/hae/"','href="#top"')
     .replaceAll('href="/#','href="#').replace('href="/"','href="#top"')
     .replace(/<a class="button download-button"[^>]*>.*?<\/a>/g,'');
-  await fs.writeFile(path.join(root,'dist/resume-portfolio.html'),standalone);
-  console.log(`Built single-page resume with ${projects.length} inline projects + downloadable HTML → dist/`);
+  await fs.writeFile(path.join(outputDir,'resume-portfolio.html'),standalone);
+  console.log(`Built single-page resume with ${projects.length} inline projects + downloadable HTML → ${variant || "/"}`);
+}
+export async function build(){
+  await fs.rm(path.join(root,'dist'),{recursive:true,force:true});
+  await fs.mkdir(path.join(root,'dist'),{recursive:true});
+  await fs.cp(path.join(root,'public'),path.join(root,'dist'),{recursive:true});
+  await buildPage(path.join(root,'content'),path.join(root,'dist'));
+  await buildPage(path.join(root,'content/hae'),path.join(root,'dist/hae'),'hae');
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)) await build();

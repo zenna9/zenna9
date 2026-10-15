@@ -4,7 +4,7 @@ subtitle: DICOM 포맷 변환 AI 서비스
 category: Medical Imaging
 period: 2026.04 — 현재
 role: FE 개발 · 폴스타헬스케어
-stack: React 19, TypeScript, pnpm, Vitest, Playwright
+stack: React 19, React 18, TypeScript, Tailwind CSS, Vitest, Jest, pnpm, Monorepo, MSW, Playwright
 metric: 90점대
 metricLabel: Lighthouse 주요 성능 지표
 order: 1
@@ -20,6 +20,9 @@ Lighthouse 기반 성능 개선으로 주요 성능 지표를 90점대까지 높
 IndexedDB 기반 DICOM 데이터 흐름을 테스트 가능한 형태로 구성해 핵심 기능의 회귀 검증 기반을 마련했습니다.
 
 ## 의료 영상과 배포 환경
-- OHIF 기반 DICOM Web Viewer를 사내 서비스에 적용하고 커스터마이징했습니다.
-- GitHub Actions CI/CD와 Docker·nginx 배포 환경을 정리했습니다.
-- 온프레미스 및 폐쇄망 환경을 고려해 외부 CDN 의존성 제거 작업을 진행했습니다.
+
+OHIF 기반 DICOM Web Viewer를 사내 서비스에 적용하고 커스터마이징했습니다.
+
+GitHub Actions CI/CD와 Docker·nginx 배포 환경을 정리했습니다.
+
+온프레미스 및 폐쇄망 환경을 고려해 외부 CDN 의존성 제거 작업을 진행했습니다.

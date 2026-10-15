@@ -93,3 +93,16 @@
   #projects{break-before:page;page-break-before:always}
   .education-list{row-gap:calc(14px + 1.6 * 9pt)}
 }
+/* Education uses a moderate heading size and the same body scale as experience. */
+.education-list h3{font-size:17px;font-weight:650;line-height:1.5;letter-spacing:-.4px}
+.education-list .prose{font-size:13px;line-height:1.95}
+.education-list .entry-meta{font-size:12px;line-height:1.7}
+@media(max-width:760px){
+  .education-list h3{font-size:16px}
+  .education-list .prose{font-size:12px}
+}
+@media print{
+  .education-list h3{font-size:11.5pt}
+  .education-list .prose{font-size:9pt;line-height:1.6}
+  .education-list .entry-meta{font-size:9pt}
+}
